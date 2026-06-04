@@ -1,0 +1,91 @@
+{% extends 'panel/base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <h1>Engagement Targets</h1>
+        <p>Define list profiles (e.g. nike, cristiano) your bot accounts will interact with during automation tasks.</p>
+    </div>
+</div>
+
+<div class="layout-split">
+    <!-- Targets List Column -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Target Profiles List</h2>
+            <span class="badge badge-running">{{ targets|length }} Total</span>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for target in targets %}
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-primary);">
+                                @{{ target.username }}
+                            </div>
+                        </td>
+                        <td>
+                            {% if target.is_active %}
+                            <span class="badge badge-active">Active</span>
+                            {% else %}
+                            <span class="badge badge-pending">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ target.created_at|date:"Y-m-d H:i" }}
+                        </td>
+                        <td>
+                            <a href="{% url 'delete_target' target.id %}" class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="return confirm('Are you sure you want to remove this target profile?');">
+                                Delete
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="empty-state">
+                            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="1"></circle></svg>
+                            <p>No target profiles registered yet. Add some to get started!</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Add Target Column -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Add Target Profile</h2>
+        </div>
+        <div style="padding: 24px;">
+            <form method="post">
+                {% csrf_token %}
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div class="form-group">
+                        <label for="{{ target_form.username.id_for_label }}">Instagram Username</label>
+                        {{ target_form.username }}
+                    </div>
+                    <div class="checkbox-wrapper">
+                        {{ target_form.is_active }}
+                        <label for="{{ target_form.is_active.id_for_label }}" style="font-size: 0.9rem; font-weight: 600;">Active</label>
+                    </div>
+                    
+                    <button type="submit" name="add_target" class="btn btn-primary" style="margin-top: 8px; justify-content: center;">
+                        Add Target
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'panel/base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <h1>Global Configurations</h1>
+        <p>Set API keys, proxy parameters, and adjust browser launching configurations for the automation runner.</p>
+    </div>
+</div>
+
+<div class="card" style="max-width: 800px; margin-bottom: 40px;">
+    <div class="card-header">
+        <h2 class="card-title">System Settings Form</h2>
+    </div>
+    <div style="padding: 32px;">
+        <form method="post">
+            {% csrf_token %}
+            
+            <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; color: var(--accent-blue); padding-bottom: 8px; border-bottom: 1px solid var(--border-color);">
+                CAPTCHA Solving Configuration
+            </h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.captcha_service.id_for_label }}">Solver Provider</label>
+                    {{ form.captcha_service }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.captcha_api_key.id_for_label }}">API Secret Key</label>
+                    {{ form.captcha_api_key }}
+                </div>
+            </div>
+
+            <h3 style="font-size: 1.1rem; font-weight: 600; margin-top: 24px; margin-bottom: 16px; color: var(--accent-blue); padding-bottom: 8px; border-bottom: 1px solid var(--border-color);">
+                SMS Activation Configuration
+            </h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.sms_service.id_for_label }}">SMS Service Provider</label>
+                    {{ form.sms_service }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.sms_api_key.id_for_label }}">API Auth Token</label>
+                    {{ form.sms_api_key }}
+                </div>
+            </div>
+
+            <h3 style="font-size: 1.1rem; font-weight: 600; margin-top: 24px; margin-bottom: 16px; color: var(--accent-blue); padding-bottom: 8px; border-bottom: 1px solid var(--border-color);">
+                Email Verification Configuration
+            </h3>
+            <div class="form-grid" style="grid-template-columns: 1fr;">
+                <div class="form-group">
+                    <label for="{{ form.email_service.id_for_label }}">Temp Mail Provider</label>
+                    {{ form.email_service }}
+                </div>
+            </div>
+
+            <h3 style="font-size: 1.1rem; font-weight: 600; margin-top: 24px; margin-bottom: 16px; color: var(--accent-blue); padding-bottom: 8px; border-bottom: 1px solid var(--border-color);">
+                Browser launch & Automation Settings
+            </h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.browser_type.id_for_label }}">Browser Engine</label>
+                    {{ form.browser_type }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.browser_path.id_for_label }}">Local Browser Path (Executable)</label>
+                    {{ form.browser_path }}
+                    <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Point to system binary if Playwright download fails (e.g. <code>/usr/bin/firefox</code>).</span>
+                </div>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="{{ form.wait_range_min.id_for_label }}">Minimum human delay (seconds)</label>
+                    {{ form.wait_range_min }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.wait_range_max.id_for_label }}">Maximum human delay (seconds)</label>
+                    {{ form.wait_range_max }}
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 16px;">
+                <div class="checkbox-wrapper">
+                    {{ form.use_random_user_agent }}
+                    <label for="{{ form.use_random_user_agent.id_for_label }}" style="font-size: 0.9rem; font-weight: 600;">Rotate User-Agent Strings</label>
+                </div>
+                <div class="checkbox-wrapper">
+                    {{ form.rotate_proxies }}
+                    <label for="{{ form.rotate_proxies.id_for_label }}" style="font-size: 0.9rem; font-weight: 600;">Enable IP Proxy Rotation</label>
+                </div>
+                <div class="checkbox-wrapper">
+                    {{ form.headless_mode }}
+                    <label for="{{ form.headless_mode.id_for_label }}" style="font-size: 0.9rem; font-weight: 600;">Run Browser Headless (Recommended)</label>
+                </div>
+            </div>
+
+            <div style="margin-top: 32px; border-top: 1px solid var(--border-color); padding-top: 24px; display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn btn-primary" style="padding: 12px 28px;">
+                    Save Global Settings
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

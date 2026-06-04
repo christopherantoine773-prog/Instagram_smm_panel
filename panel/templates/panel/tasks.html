@@ -1,0 +1,158 @@
+{% extends 'panel/base.html' %}
+
+{% block content %}
+<div class="page-header">
+    <div class="page-title">
+        <h1>Task Queue</h1>
+        <p>Monitor bot worker execution, see historical logs, and enqueue manual interaction jobs.</p>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'clear_tasks' %}" class="btn btn-secondary" onclick="return confirm('Clear all completed, pending, and failed tasks from history?');">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            Clear History
+        </a>
+    </div>
+</div>
+
+<div class="layout-split">
+    <!-- Tasks List Column -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Automation Jobs</h2>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Job Type</th>
+                        <th>Account</th>
+                        <th>Target</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'task_detail' task.id %}" style="font-weight: 600; color: var(--text-primary);">
+                                {{ task.get_task_type_display }}
+                            </a>
+                        </td>
+                        <td>
+                            {% if task.account %}
+                            <a href="{% url 'accounts_list' %}">@{{ task.account.username }}</a>
+                            {% else %}
+                            <span style="color: var(--text-muted); font-size: 0.85rem;">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if task.target %}
+                            <span style="font-family: monospace; font-size: 0.85rem;">{{ task.target }}</span>
+                            {% else %}
+                            <span style="color: var(--text-muted); font-size: 0.85rem;">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ task.status }}">{{ task.get_status_display }}</span>
+                        </td>
+                        <td>
+                            {{ task.created_at|date:"Y-m-d H:i:s" }}
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 6px;">
+                                <a href="{% url 'task_detail' task.id %}" class="btn btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;">
+                                    View Logs
+                                </a>
+                                {% if task.status == 'pending' %}
+                                <a href="{% url 'cancel_task' task.id %}" class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem;">
+                                    Cancel
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                            <p>No active or historical automation tasks. Enqueue a task to begin!</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Add Task Column -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Dispatch Bot Job</h2>
+        </div>
+        <div style="padding: 24px;">
+            <form method="post">
+                {% csrf_token %}
+                <div style="display: flex; flex-direction: column; gap: 16px;">
+                    <div class="form-group">
+                        <label for="{{ task_form.task_type.id_for_label }}">Task Action</label>
+                        {{ task_form.task_type }}
+                    </div>
+                    
+                    <div class="form-group" id="account-select-group">
+                        <label for="{{ task_form.account.id_for_label }}">Using Account</label>
+                        {{ task_form.account }}
+                    </div>
+                    
+                    <div class="form-group" id="target-input-group">
+                        <label for="{{ task_form.target.id_for_label }}">Target Username</label>
+                        {{ task_form.target }}
+                    </div>
+                    
+                    <div class="form-group" id="comment-text-group" style="display: none;">
+                        <label for="{{ task_form.comment_text.id_for_label }}">Comment Text</label>
+                        {{ task_form.comment_text }}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" style="margin-top: 8px; justify-content: center;">
+                        Enqueue Task
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const typeSelect = document.getElementById("task-type-select");
+        const accountGroup = document.getElementById("account-select-group");
+        const targetGroup = document.getElementById("target-input-group");
+        const commentGroup = document.getElementById("comment-text-group");
+        
+        function toggleFormFields() {
+            const taskType = typeSelect.value;
+            
+            if (taskType === 'create_account') {
+                accountGroup.style.display = 'none';
+                targetGroup.style.display = 'none';
+                commentGroup.style.display = 'none';
+            } else if (taskType === 'comment') {
+                accountGroup.style.display = 'flex';
+                targetGroup.style.display = 'flex';
+                commentGroup.style.display = 'flex';
+            } else {
+                accountGroup.style.display = 'flex';
+                targetGroup.style.display = 'flex';
+                commentGroup.style.display = 'none';
+            }
+        }
+        
+        if (typeSelect) {
+            typeSelect.addEventListener("change", toggleFormFields);
+            toggleFormFields(); // Run initial state check
+        }
+    });
+</script>
+{% endblock %}
