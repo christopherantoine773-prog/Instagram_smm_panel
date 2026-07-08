@@ -11,11 +11,9 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
-
 import os
 import secrets
 import logging
-from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -44,6 +42,7 @@ SECRET_KEY = get_secret_key()
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() == 'true'
 
+# Updated ALLOWED_HOSTS to allow localtunnel subdomains
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.loca.lt']
 
 
